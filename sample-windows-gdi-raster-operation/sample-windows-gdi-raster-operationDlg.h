@@ -24,6 +24,8 @@ class CsamplewindowsgdirasteroperationDlg : public CDialogEx {
     HBITMAP m_hbmColor = {};
     HBITMAP m_hbmMask = {};
     BOOL m_showTransparent = {};
+    CBrush m_brushBackground;
+
     // Generated message map functions
     virtual BOOL OnInitDialog();
     afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
@@ -37,4 +39,7 @@ class CsamplewindowsgdirasteroperationDlg : public CDialogEx {
 
   private:
     CButton m_ctrlBtnToggle;
+
+  public:
+    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 };

@@ -59,6 +59,7 @@ ON_WM_QUERYDRAGICON()
 ON_WM_DESTROY()
 ON_BN_CLICKED(IDCANCEL, &CsamplewindowsgdirasteroperationDlg::OnBnClickedCancel)
 ON_BN_CLICKED(IDOK, &CsamplewindowsgdirasteroperationDlg::OnBnClickedOk)
+ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 // CsamplewindowsgdirasteroperationDlg message handlers
@@ -95,7 +96,7 @@ BOOL CsamplewindowsgdirasteroperationDlg::OnInitDialog() {
     m_hbmMask =
         (HBITMAP)LoadImage(NULL, _T("google_logo_mask.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
-    // DrawTransparentBitmap(hdc, hbmColor, hbmMask, 50, 50);
+    m_brushBackground.CreateSolidBrush(RGB(13, 71, 161)); // LightBlue
     return TRUE; // return TRUE  unless you set the focus to a control
 }
 
@@ -165,7 +166,7 @@ void CsamplewindowsgdirasteroperationDlg::OnDestroy() {
         DeleteObject(m_hbmColor);
     if (m_hbmMask)
         DeleteObject(m_hbmMask);
-    // TODO: Add your message handler code here
+    m_brushBackground.DeleteObject();
 }
 
 void CsamplewindowsgdirasteroperationDlg::OnBnClickedCancel() {
@@ -183,4 +184,16 @@ void CsamplewindowsgdirasteroperationDlg::OnBnClickedOk() {
         m_ctrlBtnToggle.SetWindowTextW(_T("Reset"));
     }
     Invalidate(); // Force repaint
+}
+
+HBRUSH CsamplewindowsgdirasteroperationDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) {
+    HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+
+    // Set background color for the dialog itself
+    if (nCtlColor == CTLCOLOR_DLG) {
+        pDC->SetBkMode(TRANSPARENT);
+        return m_brushBackground;
+    }
+
+    return hbr;
 }
