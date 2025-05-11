@@ -93,10 +93,9 @@ BOOL CsamplewindowsgdirasteroperationDlg::OnInitDialog() {
     // TODO: Add extra initialization here
     m_hbmColor =
         (HBITMAP)LoadImage(NULL, _T("google_logo_color.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    m_hbmMask =
-        (HBITMAP)LoadImage(NULL, _T("google_logo_mask.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+    m_hbmMask = CreateMonochromeMaskFromBitmap(m_hbmColor);
 
-    m_brushBackground.CreateSolidBrush(RGB(13, 71, 161)); // LightBlue
+    m_brushBackground.CreateSolidBrush(RGB(13, 71, 161));
     return TRUE; // return TRUE  unless you set the focus to a control
 }
 
@@ -196,4 +195,60 @@ HBRUSH CsamplewindowsgdirasteroperationDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UIN
     }
 
     return hbr;
+}
+
+COLORREF InvertColor(COLORREF color) {
+    BYTE r = GetRValue(color);
+    BYTE g = GetGValue(color);
+    BYTE b = GetBValue(color);
+
+    // Invert each component
+    return RGB(255 - r, 255 - g, 255 - b);
+}
+
+HBITMAP CsamplewindowsgdirasteroperationDlg::CreateMonochromeMaskFromBitmap(HBITMAP hbmColor,
+                                                                            COLORREF transparent) {
+
+    if (!hbmColor)
+        return NULL;
+
+    BITMAP bm = {};
+    GetObject(hbmColor, sizeof(bm), &bm);
+
+    // Create DCs
+    HDC hdcScreen = ::GetDC(NULL);
+    HDC hdcColor = CreateCompatibleDC(hdcScreen);
+    HDC hdcMask = CreateCompatibleDC(hdcScreen);
+
+    // Create monochrome bitmap (1-bit, black and white)
+    HBITMAP hbmMask = CreateBitmap(bm.bmWidth, bm.bmHeight, 1, 1, NULL);
+
+    // Select bitmaps
+    HBITMAP oldColor = (HBITMAP)SelectObject(hdcColor, hbmColor);
+    HBITMAP oldMask = (HBITMAP)SelectObject(hdcMask, hbmMask);
+
+    // Set the background color to black, so black pixels become black in the mask
+    SetBkColor(hdcColor, transparent);
+
+    // Loop through each pixel and check its color value
+    for (int y = 0; y < bm.bmHeight; ++y) {
+        for (int x = 0; x < bm.bmWidth; ++x) {
+            COLORREF pixelColor = GetPixel(hdcColor, x, y);
+            // If the pixel is not black, set it to white in the mask
+            if (pixelColor == transparent) {
+                SetPixel(hdcMask, x, y, InvertColor(transparent)); // Black (transparent)
+            } else {
+                SetPixel(hdcMask, x, y, transparent); // White (opaque)
+            }
+        }
+    }
+
+    // Cleanup
+    SelectObject(hdcColor, oldColor);
+    SelectObject(hdcMask, oldMask);
+    DeleteDC(hdcColor);
+    DeleteDC(hdcMask);
+    ::ReleaseDC(NULL, hdcScreen);
+
+    return hbmMask;
 }

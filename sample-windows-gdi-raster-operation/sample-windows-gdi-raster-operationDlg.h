@@ -26,6 +26,8 @@ class CsamplewindowsgdirasteroperationDlg : public CDialogEx {
     BOOL m_showTransparent = {};
     CBrush m_brushBackground;
 
+    HBITMAP CreateMonochromeMaskFromBitmap(HBITMAP hbmColor,
+                                           COLORREF transparent = RGB(255, 255, 255));
     // Generated message map functions
     virtual BOOL OnInitDialog();
     afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
